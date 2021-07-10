@@ -12,6 +12,12 @@ class ByteStream {
   private:
     // Your code here -- add private members as necessary.
 
+    const size_t maxCapacity; // max capacity of the byteStream
+    std::string bytes; // bytes are stored in it
+    size_t readBytes; // number of bytes read from this stream
+    size_t writtenBytes; // number of bytes written to this stream
+    bool inputEnd; // whether writer end the input?
+
     // Hint: This doesn't need to be a sophisticated data structure at
     // all, but if any of your tests are taking longer than a second,
     // that's a sign that you probably want to keep exploring
