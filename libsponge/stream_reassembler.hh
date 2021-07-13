@@ -5,15 +5,41 @@
 
 #include <cstdint>
 #include <string>
+#include <set>
+#include <utility>
+
+// subString stored in queue by its index,
+// smallest indexed string is at top
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
 class StreamReassembler {
+  struct Segment{
+    std::string data;
+    size_t index;
+    Segment(std::string s, size_t x) : data(s), index(x) {}
+    bool operator<(const struct Segment that) const {
+        return this->index < that.index;
+    }
+  };
+
   private:
     // Your code here -- add private members as necessary.
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+    size_t unassembledBytes;
+    bool remarkEOF;
+    size_t endIndex; // the index of EOF
+
+    // store all unassembled sub strings
+    std::set<Segment> subStrings;  
+
+    // add a new segment to subStrings
+    // return the bytes of data added
+    void mergeSegment(Segment & seg);
+    // write segments to byte stream
+    void writeSegments();
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
