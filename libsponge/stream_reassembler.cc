@@ -1,5 +1,5 @@
 #include "stream_reassembler.hh"
-
+#include <iostream>
 // Dummy implementation of a stream reassembler.
 
 // For Lab 1, please replace with a real implementation that passes the
@@ -48,7 +48,7 @@ bool StreamReassembler::empty() const {
     return subStrings.empty(); 
 }
 
-void StreamReassembler::mergeSegment(Segment & seg){
+void StreamReassembler::mergeSegment(const Segment & seg){
     const size_t headIndex = _output.bytes_written();
     size_t start = max(seg.index, headIndex);
     size_t end = min(seg.index + seg.data.size(), headIndex+_output.remaining_capacity());
@@ -84,7 +84,7 @@ void StreamReassembler::mergeSegment(Segment & seg){
     }
 
     if(end - start > 0){
-        Segment newSeg{seg.data.substr(start - seg.index, end - start), start};
+        const Segment newSeg{seg.data.substr(start - seg.index, end - start), start};
         subStrings.insert(newSeg);
         unassembledBytes += (end - start);
     }

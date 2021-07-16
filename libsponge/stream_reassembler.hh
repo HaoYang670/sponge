@@ -15,8 +15,8 @@
 //! possibly overlapping) into an in-order byte stream.
 class StreamReassembler {
   struct Segment{
-    std::string data;
-    size_t index;
+    const std::string data;
+    const size_t index;
     Segment(std::string s, size_t x) : data(s), index(x) {}
     bool operator<(const struct Segment that) const {
         return this->index < that.index;
@@ -37,7 +37,7 @@ class StreamReassembler {
 
     // add a new segment to subStrings
     // return the bytes of data added
-    void mergeSegment(Segment & seg);
+    void mergeSegment(const Segment & seg);
     // write segments to byte stream
     void writeSegments();
 
