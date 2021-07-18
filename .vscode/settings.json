@@ -2,5 +2,6 @@
     "files.associations": {
         "stdexcept": "cpp",
         "iostream": "cpp"
-    }
+    },
+    "C_Cpp.default.cppStandard": "c++17"
 }
