@@ -95,8 +95,8 @@ void StreamReassembler::writeSegments(){
     while(!subStrings.empty()){
         auto next = subStrings.begin();        
         if((*next).index == _output.bytes_written()){
-            subStrings.erase(next);
             unassembledBytes -= _output.write((*next).data);
+            subStrings.erase(next);
         }
         else break;
     }
