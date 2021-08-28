@@ -8,7 +8,35 @@
 
 #include <functional>
 #include <queue>
+#include <set>
 
+class Timer {
+  private:
+    const size_t _init_rto;
+    bool _back_off{true};
+    size_t _current_rto;
+    size_t _current_time{0};
+    size_t _consecutive_doubles{0};
+
+  public:
+    Timer(const size_t rto);
+    void increment(const size_t ms);
+    size_t consecutive_doubles() const;
+    bool has_expired() const;
+    bool can_back_off() const;
+    void reset_time();
+    void reset_rto();
+    void double_rto();
+    void set_back_off(bool can);
+};
+
+/**
+ * SLIDING WINDOW
+ *      on the fly           new space
+ *   |***************|????????????????????????|
+ *  ack            had_sent          largest seqno can sent
+ *              (next_seqno)              (largest_seqno)       
+ */ 
 //! \brief The "sender" part of a TCP implementation.
 
 //! Accepts a ByteStream, divides it up into segments and sends the
@@ -23,14 +51,28 @@ class TCPSender {
     //! outbound queue of segments that the TCPSender wants sent
     std::queue<TCPSegment> _segments_out{};
 
+    //! segments that be sent but not be acked
+    std::queue<TCPSegment> _flying_segments{};
+
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
 
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
 
-    //! the (absolute) sequence number for the next byte to be sent
+    //! the (absolute) sequence number of the next byte to be sent
     uint64_t _next_seqno{0};
+
+    //! the (absolute) of ack received from TCP receiver
+    uint64_t _ackno{0};
+
+    //! the (absolute) seqence number of the farest byte can be sent
+    uint64_t _can_send_seqno{0};
+
+    //! whether this sender has sent "FIN"
+    bool _send_FIN{false};
+
+    Timer _timer;
 
   public:
     //! Initialize a TCPSender
