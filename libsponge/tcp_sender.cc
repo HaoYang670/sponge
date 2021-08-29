@@ -111,8 +111,8 @@ void TCPSender::fill_window() {
 void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) { 
     const uint64_t new_ackno = unwrap(ackno, _isn, _next_seqno);
 
-    // this is an old ack
-    if(new_ackno < _ackno){
+    // this is an old or impossible ack
+    if(new_ackno < _ackno || new_ackno > _can_send_seqno+1){
         return;
     }
 
