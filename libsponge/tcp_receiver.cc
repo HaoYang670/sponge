@@ -1,17 +1,12 @@
 #include "tcp_receiver.hh"
 #include <iostream>
-// Dummy implementation of a TCP receiver
 
 // For Lab 2, please replace with a real implementation that passes the
 // automated checks run by `make check_lab2`.
 
-//template <typename... Targs>
-//void DUMMY_CODE(Targs &&... /* unused */) {}
-
 using namespace std;
 
 void TCPReceiver::segment_received(const TCPSegment &seg) {
-    //DUMMY_CODE(seg);
     if(_reassembler.stream_out().input_ended()){
         return;
     }
@@ -23,13 +18,16 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
         _isn = header.seqno;
     }
     if(_hasSYN) {
-        if(header.fin){
-            _hasFIN = true;
-        }
+        // whether a fin flag has been received
+        _hasFIN = _hasFIN || header.fin;
+
         const uint64_t absIdx = unwrap(header.seqno, _isn, _reassembler.stream_out().bytes_written() + 1);
-        const uint64_t streamIdx = absIdx > 0 ? absIdx-1 : 0;
-        const string content = seg.payload().copy();
-        _reassembler.push_substring(content, streamIdx, header.fin);
+        // a segment with no syn flag and absIdx == 0 is invalid
+        if(absIdx > 0 || header.syn){
+            const uint64_t streamIdx = absIdx > 0 ? absIdx-1 : 0;
+            const string content = seg.payload().copy();
+            _reassembler.push_substring(content, streamIdx, header.fin);
+        }
     }
 }
 
