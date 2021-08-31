@@ -12,9 +12,24 @@ class TCPConnection {
     TCPConfig _cfg;
     TCPReceiver _receiver{_cfg.recv_capacity};
     TCPSender _sender{_cfg.send_capacity, _cfg.rt_timeout, _cfg.fixed_isn};
+    size_t _time_since_last_receive {0};
 
     //! outbound queue of segments that the TCPConnection wants sent
     std::queue<TCPSegment> _segments_out{};
+
+    //! send out all segments currently storing in the sender
+    //! update the window size using receiver's window size
+    //! If there is an ackno in the receiver, the segments' acks will be set
+    void _send_all_segments();
+
+    //! shutdown the local connection immediately 
+    void _unclean_shutdown();
+
+    //! as the name
+    bool _is_unclean_shutdown() const;
+
+    //! send a reset segment to peer
+    void _send_rst();
 
     //! Should the TCPConnection stay active (and keep ACKing)
     //! for 10 * _cfg.rt_timeout milliseconds after both streams have ended,
