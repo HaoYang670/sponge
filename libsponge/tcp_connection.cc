@@ -56,19 +56,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
 }
 
 bool TCPConnection::active() const { 
-    if(_is_unclean_shutdown()){
-        return false;
-    }
-    else if (!_receiver.stream_out().eof()){
-        return true;
-    }
-    else if (!_sender.stream_in().eof() || _sender.bytes_in_flight() > 0){
-        return true;
-    }
-    else if (_linger_after_streams_finish && _time_since_last_receive < 10 * _cfg.rt_timeout){
-        return true;
-    }
-    return false;
+    return (!_is_unclean_shutdown()) && (!_is_clean_shutdown());
 }
 
 size_t TCPConnection::write(const string &data) {
@@ -145,6 +133,12 @@ void TCPConnection::_unclean_shutdown(){
 
 bool TCPConnection::_is_unclean_shutdown() const{
     return _sender.stream_in().error() && _receiver.stream_out().error();
+}
+
+bool TCPConnection::_is_clean_shutdown() const{
+    return _receiver.stream_out().eof() && 
+           (_sender.stream_in().eof() && _sender.bytes_in_flight() == 0) &&
+           (!_linger_after_streams_finish || _time_since_last_receive >= 10 * _cfg.rt_timeout);
 }
 
 void TCPConnection::_send_rst() {

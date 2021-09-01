@@ -28,6 +28,9 @@ class TCPConnection {
     //! as the name
     bool _is_unclean_shutdown() const;
 
+    //! as the name
+    bool _is_clean_shutdown() const;
+
     //! send a reset segment to peer
     void _send_rst();
 
