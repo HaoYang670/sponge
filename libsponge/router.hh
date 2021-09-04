@@ -49,26 +49,37 @@ class Router {
     //! datagram's destination address.
     void route_one_datagram(InternetDatagram &dgram);
 
-  public:
-    //! Add an interface to the router
-    //! \param[in] interface an already-constructed network interface
-    //! \returns The index of the interface after it has been added to the router
-    size_t add_interface(AsyncNetworkInterface &&interface) {
-        _interfaces.push_back(std::move(interface));
-        return _interfaces.size() - 1;
-    }
+    struct route_record{
+        const uint32_t route_prefix;
+        const uint8_t prefix_length;
+        const std::optional<Address> next_hop;
+        const size_t interface_num;
+    };
 
-    //! Access an interface by index
-    AsyncNetworkInterface &interface(const size_t N) { return _interfaces.at(N); }
+    public:
+        //! Add an interface to the router
+        //! \param[in] interface an already-constructed network interface
+        //! \returns The index of the interface after it has been added to the router
+        size_t add_interface(AsyncNetworkInterface &&interface) {
+            _interfaces.push_back(std::move(interface));
+            return _interfaces.size() - 1;
+        }
 
-    //! Add a route (a forwarding rule)
-    void add_route(const uint32_t route_prefix,
-                   const uint8_t prefix_length,
-                   const std::optional<Address> next_hop,
-                   const size_t interface_num);
+        //! Access an interface by index
+        AsyncNetworkInterface &interface(const size_t N) { return _interfaces.at(N); }
 
-    //! Route packets between the interfaces
-    void route();
+        //! Add a route (a forwarding rule)
+        void add_route(const uint32_t route_prefix,
+                    const uint8_t prefix_length,
+                    const std::optional<Address> next_hop,
+                    const size_t interface_num);
+
+        //! Route packets between the interfaces
+        void route();
+
+    private:
+        std::vector<struct route_record> _forwarding_table {};
+
 };
 
 #endif  // SPONGE_LIBSPONGE_ROUTER_HH
