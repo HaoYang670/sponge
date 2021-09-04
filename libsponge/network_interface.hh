@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <queue>
+#include <map>
 
 //! \brief A "network interface" that connects IP (the internet layer, or network layer)
 //! with Ethernet (the network access layer, or link layer).
@@ -39,6 +40,42 @@ class NetworkInterface {
 
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
+
+    //! the map from ipv4 to (MAC address, time stamp) in the cache 
+    //! id address => mac
+    std::map<uint32_t, std::pair<EthernetAddress, size_t>> _arp_cache{};
+
+    //! datagrams that wait to be sent
+    //! ip address => datagrams
+    std::map<uint32_t, std::queue<InternetDatagram>> _waiting_datagrams{};
+
+    //! arp request sent in last several seconds 
+    //! ip address => time stemp
+    std::map<uint32_t, uint32_t> _request_cache{};
+
+    //! current time in ms
+    size_t _current_time {};
+
+    //! remove items in arp cache that are out of date
+    void _clean_arp_cache(const size_t threshold);
+
+    //! put the datagram in the waiting list
+    void _put_in_waiting(const InternetDatagram &dgram, const uint32_t ip_addr);
+
+    //! send out the waiting datagrams
+    void _send_waiting_datagrams(const uint32_t ip_addr);
+
+    //! remove out of date requests
+    void _clean_request_cache(const size_t threshold);
+
+    //! create a specific ARP message
+    const struct ARPMessage _createARP(const uint16_t opcode, const EthernetAddress target_ethernet_addr, const uint32_t target_ip_addr);
+
+    //! create a frame whose payload is an ipv4 datagram
+    const EthernetFrame _create_ipv4_frame(const InternetDatagram &dgram, const uint32_t target_ip);
+
+    //! create a frame whose pay load is an arp message
+    const EthernetFrame _create_arp_frame(const struct ARPMessage &arp_msg, const EthernetAddress target_mac);
 
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
